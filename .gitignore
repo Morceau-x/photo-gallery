@@ -208,3 +208,5 @@ http-client.private.env.json
 # Freezed
 **/*.freezed.dart
 **/*.g.dart
+
+.idea/caches
