@@ -1,17 +1,18 @@
+// ignore_for_file: non_constant_identifier_names
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'DTO/BucketListDTO.dart';
-import 'DTO/OwnerDTO.dart';
+import 'DTO/bucket_list_dto.dart';
+import 'DTO/owner_dto.dart';
 
-part 'ListBucketsModel.freezed.dart';
+part 'list_buckets_model.freezed.dart';
 
 @freezed
-class BucketModel with _$BucketModel {
+abstract class BucketModel with _$BucketModel {
   const factory BucketModel({required String name, required String creationDate}) = _BucketModel;
 }
 
 @freezed
-class ListBucketsModel with _$ListBucketsModel {
+abstract class ListBucketsModel with _$ListBucketsModel {
   const factory ListBucketsModel({required List<BucketModel> buckets}) = _ListBucketsModel;
 
   factory ListBucketsModel.fromJson(dynamic json) {
@@ -23,7 +24,7 @@ class ListBucketsModel with _$ListBucketsModel {
 }
 
 @freezed
-class ListAllMyBucketsDTO with _$ListAllMyBucketsDTO {
+abstract class ListAllMyBucketsDTO with _$ListAllMyBucketsDTO {
   const factory ListAllMyBucketsDTO({required OwnerDTO Owner, required BucketListDTO Buckets}) = _ListAllMyBucketsDTO;
 
   factory ListAllMyBucketsDTO.fromJson(Map<String, dynamic> json) {

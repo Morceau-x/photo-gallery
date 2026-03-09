@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:intl/intl.dart';
@@ -84,7 +85,9 @@ class S3Datasource extends HttpDatasource {
     throwOnError = throwOnError ?? true;
     options = options ?? HttpOptions();
     final signature = _signUrl(method, path, data, options);
-    options = options.copyWith(headers: {...options.headers ?? {}, ...signature});
+    options = options.copyWith(
+      headers: {...options.headers ?? {}, ...signature},
+    );
     final response = await httpService.request(method, path, options: options);
     if (throwOnError) {
       httpService.throwOnError(response);
@@ -92,35 +95,155 @@ class S3Datasource extends HttpDatasource {
     final xml2json = Xml2Json();
     xml2json.parse(response.body);
     final jsonData = xml2json.toParker();
-    print(jsonData);
     return fromJson(jsonDecode(jsonData));
   }
 
-  @override
-  Future<T> get<T>(String path, FromJson<T> fromJson, {HttpOptions? options, bool? throwOnError}) =>
-      request(HttpMethod.GET, path, fromJson, options: options, throwOnError: throwOnError);
-
-  @override
-  Future<T> post<T>(String path, FromJson<T> fromJson, dynamic data, {HttpOptions? options, bool? throwOnError}) =>
-      request(HttpMethod.POST, path, fromJson, data: data, options: options, throwOnError: throwOnError);
-
-  @override
-  Future<T> put<T>(String path, FromJson<T> fromJson, dynamic data, {HttpOptions? options, bool? throwOnError}) =>
-      request(HttpMethod.PUT, path, fromJson, data: data, options: options, throwOnError: throwOnError);
-
-  @override
-  Future<T> patch<T>(String path, FromJson<T> fromJson, dynamic data, {HttpOptions? options, bool? throwOnError}) =>
-      request(HttpMethod.PATCH, path, fromJson, data: data, options: options, throwOnError: throwOnError);
-
-  @override
-  Future<T> delete<T>(String path, FromJson<T> fromJson, dynamic data, {HttpOptions? options, bool? throwOnError}) =>
-      request(HttpMethod.DELETE, path, fromJson, data: data, options: options, throwOnError: throwOnError);
-
-  _makeCanonicalHeadersString(Map<String, String> headers) {
-    return headers.entries.map((e) => "${e.key.toLowerCase()}:${e.value.trim()}\n").join();
+  Future<File> getFile(
+    String path,
+    String outputPath, {
+    HttpOptions? options,
+    String? data,
+    bool? throwOnError,
+  }) async {
+    throwOnError = throwOnError ?? true;
+    options = options ?? HttpOptions();
+    final signature = _signUrl(HttpMethod.GET, path, data, options);
+    options = options.copyWith(
+      headers: {...options.headers ?? {}, ...signature},
+    );
+    final response = await httpService.requestWithStreamResponse(
+      HttpMethod.GET,
+      path,
+      options: options,
+    );
+    if (throwOnError) {
+      httpService.throwOnError(response);
+    }
+    final file = await File(outputPath).create(recursive: true);
+    final writer = file.openWrite();
+    await response.stream.pipe(writer);
+    await writer.flush();
+    await writer.close();
+    return file;
   }
 
-  _signUrl(HttpMethod method, String path, String? data, HttpOptions options) {
+  Future sendFile(
+    String path,
+    File file, {
+    HttpOptions? options,
+    bool? throwOnError,
+  }) async {
+    throwOnError = throwOnError ?? true;
+    options = options ?? HttpOptions();
+    final signature = _signUrl(HttpMethod.PUT, path, null, options);
+    options = options.copyWith(
+      headers: {...options.headers ?? {}, ...signature},
+    );
+
+    final response = await httpService.streamRequest(
+      HttpMethod.PUT,
+      path,
+      length: file.lengthSync(),
+      stream: file.openRead(),
+      options: options,
+    );
+    print("Resonse ${response.statusCode} $response");
+    if (throwOnError) {
+      httpService.throwOnError(response);
+    }
+    return null;
+  }
+
+  @override
+  Future<T> get<T>(
+    String path,
+    FromJson<T> fromJson, {
+    HttpOptions? options,
+    bool? throwOnError,
+  }) => request(
+    HttpMethod.GET,
+    path,
+    fromJson,
+    options: options,
+    throwOnError: throwOnError,
+  );
+
+  @override
+  Future<T> post<T>(
+    String path,
+    FromJson<T> fromJson,
+    dynamic data, {
+    HttpOptions? options,
+    bool? throwOnError,
+  }) => request(
+    HttpMethod.POST,
+    path,
+    fromJson,
+    data: data,
+    options: options,
+    throwOnError: throwOnError,
+  );
+
+  @override
+  Future<T> put<T>(
+    String path,
+    FromJson<T> fromJson,
+    dynamic data, {
+    HttpOptions? options,
+    bool? throwOnError,
+  }) => request(
+    HttpMethod.PUT,
+    path,
+    fromJson,
+    data: data,
+    options: options,
+    throwOnError: throwOnError,
+  );
+
+  @override
+  Future<T> patch<T>(
+    String path,
+    FromJson<T> fromJson,
+    dynamic data, {
+    HttpOptions? options,
+    bool? throwOnError,
+  }) => request(
+    HttpMethod.PATCH,
+    path,
+    fromJson,
+    data: data,
+    options: options,
+    throwOnError: throwOnError,
+  );
+
+  @override
+  Future<T> delete<T>(
+    String path,
+    FromJson<T> fromJson,
+    dynamic data, {
+    HttpOptions? options,
+    bool? throwOnError,
+  }) => request(
+    HttpMethod.DELETE,
+    path,
+    fromJson,
+    data: data,
+    options: options,
+    throwOnError: throwOnError,
+  );
+
+  String _makeCanonicalHeadersString(Map<String, String> headers) {
+    return headers.entries
+        .map((e) => "${e.key.toLowerCase()}:${e.value.trim()}\n")
+        .join();
+  }
+
+  Map<String, String> _signUrl(
+    HttpMethod method,
+    String path,
+    String? data,
+    HttpOptions options,
+  ) {
     final date = DateTime.now().toUtc();
     final specialFormattedDate = date
         .toIso8601String()
@@ -131,25 +254,43 @@ class S3Datasource extends HttpDatasource {
 
     final scope = "${dateFormatter.format(date)}/$region/$service/$requestType";
     final signedHeaders = "host;x-amz-content-sha256;x-amz-date";
-    final payloadHash = crypto.sha256.convert(utf8.encode(data ?? "")).toString();
+    final payloadHash = crypto.sha256
+        .convert(utf8.encode(data ?? ""))
+        .toString();
     final url = httpService.buildUri(path, options);
-    final canonicalHeaders = {"host": s3Host, "x-amz-content-sha256": payloadHash, "x-amz-date": specialFormattedDate};
+    final canonicalHeaders = {
+      "host": s3Host,
+      "x-amz-content-sha256": payloadHash,
+      "x-amz-date": specialFormattedDate,
+    };
     final canonicalRequest =
         "${method.name}\n${url.path}\n${url.query}\n${_makeCanonicalHeadersString(canonicalHeaders)}\n$signedHeaders\n$payloadHash";
     final stringToSign =
         "$algorithm\n$specialFormattedDate\n$scope\n${crypto.sha256.convert(utf8.encode(canonicalRequest))}";
-    final dateKey =
-        crypto.Hmac(
-          crypto.sha256,
-          utf8.encode("AWS4$clientSecret"),
-        ).convert(utf8.encode(dateFormatter.format(date))).bytes;
-    final regionKey = crypto.Hmac(crypto.sha256, dateKey).convert(utf8.encode(region)).bytes;
-    final serviceKey = crypto.Hmac(crypto.sha256, regionKey).convert(utf8.encode(service)).bytes;
-    final signingKey = crypto.Hmac(crypto.sha256, serviceKey).convert(utf8.encode(requestType)).bytes;
-    final signature = crypto.Hmac(crypto.sha256, signingKey).convert(utf8.encode(stringToSign));
+    final dateKey = crypto.Hmac(
+      crypto.sha256,
+      utf8.encode("AWS4$clientSecret"),
+    ).convert(utf8.encode(dateFormatter.format(date))).bytes;
+    final regionKey = crypto.Hmac(
+      crypto.sha256,
+      dateKey,
+    ).convert(utf8.encode(region)).bytes;
+    final serviceKey = crypto.Hmac(
+      crypto.sha256,
+      regionKey,
+    ).convert(utf8.encode(service)).bytes;
+    final signingKey = crypto.Hmac(
+      crypto.sha256,
+      serviceKey,
+    ).convert(utf8.encode(requestType)).bytes;
+    final signature = crypto.Hmac(
+      crypto.sha256,
+      signingKey,
+    ).convert(utf8.encode(stringToSign));
 
     return {
-      "Authorization": "$algorithm Credential=$clientId/$scope, SignedHeaders=$signedHeaders, Signature=$signature",
+      "Authorization":
+          "$algorithm Credential=$clientId/$scope, SignedHeaders=$signedHeaders, Signature=$signature",
       ...canonicalHeaders,
     };
   }

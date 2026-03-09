@@ -1,12 +1,13 @@
+// ignore_for_file: non_constant_identifier_names
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'OwnerDTO.dart';
+import 'owner_dto.dart';
 
-part 'S3ItemDTO.freezed.dart';
-part 'S3ItemDTO.g.dart';
+part 's3_item_dto.freezed.dart';
+part 's3_item_dto.g.dart';
 
 @freezed
-class S3ItemDTO with _$S3ItemDTO {
+abstract class S3ItemDTO with _$S3ItemDTO {
   const factory S3ItemDTO({
     required String Key,
     required String ETag,
