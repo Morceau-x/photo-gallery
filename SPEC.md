@@ -1,4 +1,4 @@
-chan# Photo Gallery App Spec
+# Photo Gallery App Spec
 
 A mobile photo management app that uses S3 as the primary backend — no server, all data stored directly in S3.
 
@@ -173,3 +173,85 @@ A mobile photo management app that uses S3 as the primary backend — no server,
   - Image category
 - [ ] Batch-analyze existing S3 photos that lack AI metadata (background task)
 - [ ] Search and filter photos by AI-generated labels
+
+## 18. Shared Albums & Link Sharing
+
+- [ ] Generate shareable links for albums or individual photos (no app install required for viewer)
+- [ ] Store shared album definitions in S3 metadata (`_shared/{albumId}.json`)
+- [ ] Optional link expiry (1 day, 7 days, 30 days, never)
+- [ ] Optional password protection on shared links
+- [ ] Allow link recipients to upload photos to a shared album (configurable)
+- [ ] Revoke shared links at any time
+- [ ] Since no backend: use S3 presigned URLs for link-based access with configurable TTL
+
+## 19. Memories ("On This Day")
+
+- [ ] Surface photos from 1, 2, 3, 5, 10 years ago on the home screen
+- [ ] Display memories as a dismissable card/story-style carousel
+- [ ] Generate memories from S3 metadata date fields (no server needed)
+- [ ] Option to share a memory directly
+- [ ] Notification/reminder for new memories (optional, configurable)
+- [ ] Exclude specific photos or date ranges from memories
+
+## 20. Map View
+
+- [ ] Display photos on an interactive map using GPS coordinates from EXIF/metadata
+- [ ] Cluster nearby photos into groups at lower zoom levels
+- [ ] Tap a cluster or pin to browse photos taken at that location
+- [ ] Filter map by date range, album, or S3 backend
+- [ ] Heatmap mode showing density of photos by location
+
+## 21. Trash / Soft Delete
+
+- [ ] Deleted photos move to a trash folder instead of permanent deletion
+- [ ] Store trashed files under a dedicated S3 prefix (`_trash/`)
+- [ ] Auto-purge trash after configurable retention period (default 30 days)
+- [ ] Browse and restore photos from trash
+- [ ] "Empty trash" manual action for immediate permanent deletion
+- [ ] Track deletion date in metadata to enforce retention
+
+## 22. End-to-End Encryption
+
+- [ ] Client-side AES-256 encryption of photos before uploading to S3
+- [ ] Encrypt thumbnails and metadata files as well
+- [ ] Derive encryption key from user-provided passphrase (PBKDF2/Argon2)
+- [ ] Store encrypted key material in platform secure storage (keychain/keystore)
+- [ ] Decrypt on-device only; S3 stores only ciphertext
+- [ ] Per-S3-backend toggle: enable/disable E2EE (some backends may be unencrypted for sharing)
+- [ ] Key export/backup flow so user can recover data on a new device
+
+## 23. Live Photos & Motion Photos
+
+- [ ] Detect and preserve iOS Live Photos (HEIC + MOV pair)
+- [ ] Detect and preserve Android Motion Photos (embedded video in JPEG)
+- [ ] Upload both components together, linked in metadata
+- [ ] Play the motion/video component on long-press in gallery and viewer
+- [ ] Generate still thumbnail from the photo component
+- [ ] Option to extract and save the video component separately
+
+## 24. RAW File Support
+
+- [ ] Detect RAW formats: DNG, CR2, CR3, ARW, NEF, ORF, RW2, RAF
+- [ ] Generate a viewable JPEG preview from RAW files for browsing and thumbnails
+- [ ] Store original RAW + generated JPEG preview together on S3
+- [ ] Display JPEG preview in gallery; download original RAW on explicit request
+- [ ] Preserve RAW-specific EXIF data in metadata
+
+## 25. Background Auto-Upload
+
+- [ ] Persistent background sync service (WorkManager on Android / BGTaskScheduler on iOS)
+- [ ] Automatically detect and upload new photos even when app is closed
+- [ ] Configurable: which albums/folders to auto-upload
+- [ ] Respect Wi-Fi only / cellular toggle
+- [ ] Upload progress notification in system notification tray
+- [ ] Resume uploads after device restart
+- [ ] Battery-aware: pause uploads when battery is low (configurable threshold)
+
+## 26. Reverse Geocoding
+
+- [ ] Convert GPS coordinates from EXIF to human-readable place names (city, region, country)
+- [ ] Use on-device geocoding when available (Android Geocoder / iOS CLGeocoder)
+- [ ] Fallback to offline reverse geocoding database for no-network scenarios
+- [ ] Store resolved place names in S3 metadata per photo
+- [ ] Search and filter photos by place name
+- [ ] Group photos by location in the gallery view
