@@ -8,7 +8,6 @@ import 'package:xml2json/xml2json.dart';
 
 import 'http_datasource.dart';
 
-
 /// Datasource that enables access to an S3 bucket.
 ///
 /// Handles authentication with AWS Signature Version 4, using the provided [clientId] and [clientSecret].
@@ -93,8 +92,11 @@ class S3Datasource extends HttpDatasource {
       httpService.throwOnError(response);
     }
     final xml2json = Xml2Json();
+    print("hello");
     xml2json.parse(response.body);
     final jsonData = xml2json.toParker();
+    print("world");
+
     return fromJson(jsonDecode(jsonData));
   }
 
