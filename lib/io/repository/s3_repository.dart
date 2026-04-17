@@ -15,22 +15,21 @@ class S3Repository {
     : _s3Datasource = s3Datasource;
 
   factory S3Repository.fromConfig(S3ConnectionConfig config) {
-    final datasource =
-        config.urlStyle == S3UrlStyle.virtualHostedStyle
-            ? S3Datasource.virtualHostedStyle(
-              s3Host: config.endpoint,
-              region: config.region,
-              clientId: config.accessKey,
-              clientSecret: config.secretKey,
-              bucketName: config.bucketName,
-            )
-            : S3Datasource.pathStyle(
-              s3Host: config.endpoint,
-              region: config.region,
-              clientId: config.accessKey,
-              clientSecret: config.secretKey,
-              bucketName: config.bucketName,
-            );
+    final datasource = config.urlStyle == S3UrlStyle.virtualHostedStyle
+        ? S3Datasource.virtualHostedStyle(
+            s3Host: config.endpoint,
+            region: config.region,
+            clientId: config.accessKey,
+            clientSecret: config.secretKey,
+            bucketName: config.bucketName,
+          )
+        : S3Datasource.pathStyle(
+            s3Host: config.endpoint,
+            region: config.region,
+            clientId: config.accessKey,
+            clientSecret: config.secretKey,
+            bucketName: config.bucketName,
+          );
     return S3Repository(s3Datasource: datasource);
   }
 
@@ -48,6 +47,7 @@ class S3Repository {
       await listObjects();
       return true;
     } catch (_) {
+      print('hello');
       return false;
     }
   }
