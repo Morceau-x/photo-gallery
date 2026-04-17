@@ -1,0 +1,15 @@
+services:
+  garage:
+    image: dxflrs/garage:v2.2.0
+    ports:
+      - "3900:3900"  # S3 API
+      - "3902:3902"  # Web API
+      - "3903:3903"  # Admin API
+    volumes:
+      - ./docker/garage.toml:/etc/garage.toml
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+
+volumes:
+  garage-meta:
+  garage-data:

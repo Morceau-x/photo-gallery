@@ -23,11 +23,11 @@ A mobile photo management app that uses S3 as the primary backend — no server,
 
 ## 3. Multi-S3 Storage Support
 
-- [ ] Configure multiple S3-compatible storage backends (AWS S3, Backblaze B2, MinIO, Cloudflare R2, etc.)
-- [ ] Add/edit/remove S3 connections with: endpoint, region, access key, secret key, bucket name
-- [ ] Securely store credentials in platform keychain (iOS Keychain / Android Keystore)
+- [x] Configure multiple S3-compatible storage backends (AWS S3, Backblaze B2, MinIO, Cloudflare R2, etc.)
+- [x] Add/edit/remove S3 connections with: endpoint, region, access key, secret key, bucket name
+- [x] Securely store credentials in platform keychain (iOS Keychain / Android Keystore)
 - [ ] Per-connection status indicator (connected/error/syncing)
-- [ ] Set a default storage backend for new uploads
+- [x] Set a default storage backend for new uploads
 - [ ] Browse each S3 backend independently or in a unified view
 
 ## 4. Unified Gallery View

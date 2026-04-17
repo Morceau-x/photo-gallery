@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:intl/intl.dart';
+import 'package:photo_gallery/models/s3_connection_config.dart';
 import 'package:xml2json/xml2json.dart';
 
 import 'http_datasource.dart';
 
-enum S3UrlStyle { virtualHostedStyle, pathStyle }
 
 /// Datasource that enables access to an S3 bucket.
 ///
