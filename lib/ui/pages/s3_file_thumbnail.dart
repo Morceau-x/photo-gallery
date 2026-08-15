@@ -26,17 +26,17 @@ abstract class ThumbnailDisplayData with _$ThumbnailDisplayData {
 
 @riverpod
 Future<ThumbnailDisplayData> fileUrl(Ref ref, S3ItemModel item) async {
+  final repo = ref.watch(s3RepositoryProvider);
+  if (repo == null) throw Exception('No S3 connection selected');
   final temporaryDirectory = await getTemporaryDirectory();
-  print("GET ITEMMMMMM: $item");
   final outputPath = "${temporaryDirectory.path}/s3/${item.name}";
-  print("INPUT ${item.name}, $outputPath");
-  final content = await repository.getObject(item.name, outputPath);
+  final content = await repo.getObject(item.name, outputPath);
   print(
     "${item.name} - ${lookupMimeType(outputPath)}: ${crypto.md5.convert(content.readAsBytesSync()).toString()} / ${item.eTag}",
   );
-  final mediaInfo = (await FFprobeKit.getMediaInformation(
-    outputPath,
-  )).getMediaInformation();
+  final mediaInfo =
+      (await FFprobeKit.getMediaInformation(outputPath))
+          .getMediaInformation();
   final stream = mediaInfo?.getStreams().firstOrNull;
   final width = stream?.getWidth()?.toDouble();
   final height = stream?.getHeight()?.toDouble();
@@ -64,7 +64,7 @@ class S3FileThumbnail extends HookConsumerWidget {
         print("ERROR: $err");
         return Container(color: Colors.red);
       },
-      loading: () => Center(child: const CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator()),
     );
   }
 }

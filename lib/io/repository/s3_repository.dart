@@ -1,7 +1,12 @@
 import 'dart:io';
 
 import 'package:photo_gallery/io/datasource/s3_datasource.dart';
+import 'package:photo_gallery/models/s3_connection_config.dart';
 import 'package:photo_gallery/models/s3_item_list_model.dart';
+import 'package:photo_gallery/providers/s3_connection_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 's3_repository.g.dart';
 
 class S3Repository {
   final S3Datasource _s3Datasource;
@@ -9,19 +14,24 @@ class S3Repository {
   S3Repository({required S3Datasource s3Datasource})
     : _s3Datasource = s3Datasource;
 
-  S3Repository.fromCredentials({
-    required String s3Host,
-    required String region,
-    required String clientId,
-    required String clientSecret,
-    required String bucketName,
-  }) : _s3Datasource = S3Datasource.pathStyle(
-         s3Host: s3Host,
-         region: region,
-         clientId: clientId,
-         clientSecret: clientSecret,
-         bucketName: bucketName,
-       );
+  factory S3Repository.fromConfig(S3ConnectionConfig config) {
+    final datasource = config.urlStyle == S3UrlStyle.virtualHostedStyle
+        ? S3Datasource.virtualHostedStyle(
+            s3Host: config.endpoint,
+            region: config.region,
+            clientId: config.accessKey,
+            clientSecret: config.secretKey,
+            bucketName: config.bucketName,
+          )
+        : S3Datasource.pathStyle(
+            s3Host: config.endpoint,
+            region: config.region,
+            clientId: config.accessKey,
+            clientSecret: config.secretKey,
+            bucketName: config.bucketName,
+          );
+    return S3Repository(s3Datasource: datasource);
+  }
 
   Future<S3ItemListModel> listObjects() =>
       _s3Datasource.get("/", S3ItemListModel.fromJson);
@@ -31,12 +41,21 @@ class S3Repository {
 
   Future addObject(String path, File file) =>
       _s3Datasource.sendFile(path, file);
+
+  Future<bool> testConnection() async {
+    try {
+      await listObjects();
+      return true;
+    } catch (_) {
+      print('hello');
+      return false;
+    }
+  }
 }
 
-final repository = S3Repository.fromCredentials(
-  s3Host: "TODO",
-  region: "TODO",
-  clientId: "TODO",
-  clientSecret: "TODO",
-  bucketName: "TODO",
-);
+@riverpod
+S3Repository? s3Repository(Ref ref) {
+  final config = ref.watch(selectedConnectionProvider);
+  if (config == null) return null;
+  return S3Repository.fromConfig(config);
+}
