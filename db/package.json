@@ -1,0 +1,21 @@
+{
+  "name": "db",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "fmt": "oxfmt"
+  },
+  "dependencies": {
+    "dotenv": "17.4.2",
+    "drizzle-orm": "1.0.0-rc.4",
+    "pg": "8.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "8.21.0",
+    "drizzle-kit": "1.0.0-rc.4",
+    "eslint-plugin-drizzle": "0.2.3",
+    "oxfmt": "0.63.0",
+    "oxlint": "1.78.0"
+  },
+  "packageManager": "pnpm@11.22.0"
+}

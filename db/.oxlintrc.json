@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "jsPlugins": ["eslint-plugin-drizzle"],
+  "plugins": [
+    "eslint",
+    "typescript",
+    "oxc",
+    "import",
+    "unicorn",
+    "promise",
+    "node",
+    "jsdoc",
+    "jsx-a11y",
+    "vitest"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error",
+    "pedantic": "error",
+    "style": "error",
+    "restriction": "error",
+    "nursery": "warn"
+  },
+  "rules": {
+    "drizzle/enforce-delete-with-where": ["error", { "drizzleObjectName": ["db", "tx"] }],
+    "drizzle/enforce-update-with-where": ["error", { "drizzleObjectName": ["db", "tx"] }]
+  },
+  "env": {
+    "builtin": true
+  }
+}
